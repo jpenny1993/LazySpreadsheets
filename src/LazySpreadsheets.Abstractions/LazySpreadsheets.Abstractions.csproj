@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>12.0</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RootNamespace>LazySpreadsheets</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Description>Provides abstractions for Excel spreadsheet styles.</Description>
+        <Authors>John Penny</Authors>
+    </PropertyGroup>
+
+</Project>
