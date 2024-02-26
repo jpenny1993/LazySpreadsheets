@@ -168,4 +168,11 @@ internal sealed class WorksheetBuilder<TData> : IWorksheetBuilder<TData>, IWorks
         _freezeColumns = columns;
         return this;
     }
+
+    public IWorksheetBuilder<TData> Freeze(CellReference cellReference)
+    {
+        _freezeRows = cellReference.RowNumber;
+        _freezeColumns = cellReference.ColumnNumber;
+        return this;
+    }
 }

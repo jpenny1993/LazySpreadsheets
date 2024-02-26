@@ -51,4 +51,9 @@ public interface IWorksheetBuilder<TData>
     /// <param name="rows">Total rows to freeze. (default: 0)</param>
     /// <param name="columns">Total columns to freeze. (default: 0)</param>
     IWorksheetBuilder<TData> Freeze(int rows, int columns);
+    
+    /// <summary>
+    /// Sets a freeze pane on the worksheet.
+    /// </summary>
+    IWorksheetBuilder<TData> Freeze(CellReference cellReference);
 }
