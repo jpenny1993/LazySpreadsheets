@@ -46,7 +46,8 @@ internal sealed class WorksheetBuilder<TData> : IWorksheetBuilder<TData>, IWorks
         if (dataRange.RowCount() == 0)
         {
             // Create empty table
-            dataEnd = headerStart.MutateBy(_columnDefinitions.Count, 1); // include empty row since no data
+            var finalColumn = Math.Max(_columnDefinitions.Count - 1, 0); // starts from first column
+            dataEnd = headerStart.MutateBy(finalColumn, 1); // include empty row since no data
             worksheet.Range(headerStart, dataEnd).CreateTable();
         }
         else
