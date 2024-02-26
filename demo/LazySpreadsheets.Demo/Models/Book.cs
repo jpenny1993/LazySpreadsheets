@@ -31,6 +31,7 @@ public record Book
     [CellFormat(NumberFormats.Date)]
     public DateTime Published { get; set; }
 
+    [Subtotal]
     [CellFormat(CellFormats.AccountingGBP)]
     public decimal Price { get; set; }
 

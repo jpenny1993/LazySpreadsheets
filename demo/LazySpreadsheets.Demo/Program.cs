@@ -20,6 +20,7 @@ using var workbook = new WorkbookBuilder()
             .Format(NumberFormats.DateTime)
         )
         .Column(book => book.Price, col => col
+            .Subtotal()
             .ConditionalFormat(format => format
                 .ColorScale()
                 .LowestValue(XLColor.Red)

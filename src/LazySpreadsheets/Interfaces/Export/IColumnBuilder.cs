@@ -58,6 +58,11 @@ public interface IColumnBuilder<out TData, in TProperty>
     IColumnBuilder<TData, TProperty> Formula(string formulaA1);
 
     /// <summary>
+    /// Configures a subtotal cell to display above the column.
+    /// </summary>
+    IColumnBuilder<TData, TProperty> Subtotal();
+    
+    /// <summary>
     /// Sets the cell value to a static value.
     /// </summary>
     IColumnBuilder<TData, TProperty> Value(TProperty staticValue);

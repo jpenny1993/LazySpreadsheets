@@ -1,7 +1,9 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using LazySpreadsheets.Attributes;
+using LazySpreadsheets.Extensions;
 using LazySpreadsheets.Interfaces.Export;
 
 namespace LazySpreadsheets.Export;
@@ -27,38 +29,58 @@ internal sealed class WorksheetBuilder<TData> : IWorksheetBuilder<TData>, IWorks
     {
         var worksheet = workbook.Worksheets.Add(_worksheetName);
 
+        var hasSubtotalRow = _columnDefinitions.Any(c => c.HasSubtotal);
+        CellReference headerStart = hasSubtotalRow ? "A2" : "A1"; // Skip column for subtotals
+        CellReference dataStart = headerStart.MutateBy(0, 1); // A2 or A3
+        CellReference dataEnd;
+        
         // Write column headers
-        worksheet.Cell(1, 1).InsertData(new[] { _columnDefinitions.Select(d => d.ColumnHeader) });
+        worksheet.Cell(headerStart).InsertData(new[] { _columnDefinitions.Select(d => d.ColumnHeader) });
 
         // Do model transformation using instructions from fluent api 
         var rowData = _datasource.Select(i => _columnDefinitions.Select(d => d.GetCellValue(i)));
 
         // Write row data, otherwise works fine with just the data source
-        var dataRange = worksheet.Cell(2, 1).InsertData(rowData);
+        var dataRange = worksheet.Cell(dataStart).InsertData(rowData);
 
         if (dataRange.RowCount() == 0)
         {
             // Create empty table
-            worksheet.Range(worksheet.FirstCell(), worksheet.Cell(2, _columnDefinitions.Count)).CreateTable();
+            dataEnd = headerStart.MutateBy(_columnDefinitions.Count, 1); // include empty row since no data
+            worksheet.Range(headerStart, dataEnd).CreateTable();
         }
         else
         {
+            dataEnd = dataRange.LastCell().CellReference();
+
             // Customise how column data is displayed
             foreach (var column in _columnDefinitions)
             {
-                column.ApplyStyles(dataRange.Column(column.ColumnNumber));
+                column.ApplyStyles(dataRange.Column(column.ColumnNumber).AsRange());
             }
 
             // Make data filterable in excel
-            worksheet.Range(worksheet.FirstCell(), dataRange.LastCell()).CreateTable().SetAutoFilter();
+            worksheet.Range(headerStart, dataEnd).CreateTable().SetAutoFilter();
         }
 
         // Resize columns for long text values
         worksheet.Columns().AdjustToContents();
 
-        foreach (var column in _columnDefinitions.Where(c => c.ColumnWidth > 0))
+        foreach (var column in _columnDefinitions)
         {
-            worksheet.Column(column.ColumnNumber).Width = column.ColumnWidth;
+            if (column.ColumnWidth > 0) // manual column size
+            {
+                worksheet.Column(column.ColumnNumber).Width = column.ColumnWidth;
+            }
+
+            if (column.HasSubtotal) // sum filtered numeric data
+            {
+                CellReference subtotalCellRef = new (column.ColumnNumber, headerStart.RowNumber - 1);
+                CellReference columnDataStart = new (column.ColumnNumber, dataStart.RowNumber); 
+                CellReference columnDataEnd = new (column.ColumnNumber, dataEnd.RowNumber);
+                worksheet.Cell(subtotalCellRef).FormulaA1 = $"SUBTOTAL(9,{columnDataStart}:{columnDataEnd})";
+                column.ApplyStyles(worksheet.Range(subtotalCellRef, subtotalCellRef));
+            }
         }
 
         // Add freeze pane

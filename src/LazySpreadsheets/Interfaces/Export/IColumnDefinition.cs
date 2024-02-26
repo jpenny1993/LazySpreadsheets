@@ -14,7 +14,9 @@ internal interface IColumnDefinition
 
     int ColumnWidth { get; }
 
-    void ApplyStyles(IXLRangeColumn column);
+    bool HasSubtotal { get; }
+
+    void ApplyStyles(IXLRange column);
 
     object? GetCellValue(object? item);
 }

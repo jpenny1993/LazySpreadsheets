@@ -5,96 +5,122 @@
 /// </summary>
 public record CellReference
 {
+    private uint _column;
+    private uint _row;
+    
+    /// <summary>
+    /// The Column number i.e. 1, 2, 3, 4.
+    /// </summary>
+    public int ColumnNumber { get => Convert.ToInt32(_column); set => _column = Convert.ToUInt32(value); }
+
     /// <summary>
     /// The Column Letter i.e. A, B, C, D.
     /// </summary>
-    public string ColumnLetter { get; set; }
+    public string ColumnLetter { get => ToColumnLetter(_column); set => _column = ToColumnNumber(value); }
 
     /// <summary>
     /// The row number i.e. 1, 2, 3, 4.
     /// </summary>
-    public uint RowNumber { get; set; }
+    public int RowNumber { get => Convert.ToInt32(_row); set => _row = Convert.ToUInt32(value); }
 
     public CellReference()
     {
-        ColumnLetter = "A";
-        RowNumber = 1;
+        _column = 1u;
+        _row = 1u;
     }
 
+    public CellReference(uint column, uint row)
+    {
+        _column = column;
+        _row = row;
+    }
+
+    public CellReference(int column, int row)
+        : this(Convert.ToUInt32(column), Convert.ToUInt32(row))
+    {
+    }
+ 
+    public CellReference(string column, uint row)
+        :this(ToColumnNumber(column), row)
+    {
+    }
+
+    public CellReference(string column, int rowNumber)
+        : this(ToColumnNumber(column), Convert.ToUInt32(rowNumber))
+    {
+    }
+   
+    public CellReference(char column, uint row)
+        :this(ToColumnNumber(column.ToString()), row)
+    {
+    }
+
+    public CellReference(char column, int rowNumber)
+        : this(column, Convert.ToUInt32(rowNumber))
+    {
+    }
+
+    
     public CellReference(string cellRef)
     {
-        ColumnLetter = GetColumnLetter(cellRef);
-        RowNumber = GetRowNumber(cellRef);
+        var columnLetter = GetColumnLetter(cellRef);
+        _column = ToColumnNumber(columnLetter);
+        _row = GetRowNumber(cellRef);
     }
 
-    public CellReference(string columnLetter, uint rowNumber)
+    public CellReference(CellReference cellRef)
     {
-        ColumnLetter = columnLetter;
-        RowNumber = rowNumber;
+        _column = cellRef._column;
+        _row = cellRef._row;
     }
 
     public static implicit operator CellReference(string text) => new (text);
 
-    public static implicit operator string(CellReference cellRef) => cellRef.ToString();
-
     /// <summary>
     /// Returns a new Object with the same values.
     /// </summary>
-    public CellReference Copy() => new (ColumnLetter, RowNumber);
+    public CellReference Copy() => new (this);
 
     /// <summary>
     /// Returns a new object modified by the given values.
     /// </summary>
     public CellReference MutateBy(int columns, int rows)
     {
-        var uintValue = Convert.ToUInt32(rows);
-        var nextRowNumber = RowNumber + uintValue;
+        var rowNumber = _row + rows;
+        var nextRowNumber = rowNumber < 1 ? 1u : Convert.ToUInt32(rowNumber);
 
-        if (columns != 0)
-        {
-            var nextColumnNumber = ToColumnNumber(ColumnLetter) + columns;
-            var nextColumnLetter = ToColumnLetter(nextColumnNumber);
-            return new CellReference(nextColumnLetter, nextRowNumber);
-        }
+        var columnNumber = _column + columns;
+        var nextColumnNumber = columnNumber < 1 ? 1u : Convert.ToUInt32(columnNumber);
 
-        return new CellReference(ColumnLetter, nextRowNumber);
+        return new CellReference(nextColumnNumber, nextRowNumber);
     }
 
     /// <summary>
     /// Increments the column value by one.
     /// </summary>
-    public void NextColumn()
-    {
-        var nextColumnNumber = ToColumnNumber(ColumnLetter) + 1;
-        ColumnLetter = ToColumnLetter(nextColumnNumber);
-    }
+    public void NextColumn() => _column += 1u;
 
     /// <summary>
     /// Increments the row value by one.
     /// </summary>
-    public void NextRow()
-    {
-        RowNumber++;
-    }
+    public void NextRow() => _row += 1u;
 
     /// <summary>
     /// Decreases the column value by one.
     /// </summary>
-    public void PreviousColumn(string columnLetter)
+    public void PreviousColumn()
     {
-        if (columnLetter == "A") return;
-
-        var previousColumnNumber = ToColumnNumber(columnLetter) - 1; 
-        ColumnLetter = ToColumnLetter(previousColumnNumber);
+        if (_column > 1u) return;
+        _column -= 1u;
     }
 
     /// <summary>
     /// Decreases the row value by one.
     /// </summary>
-    public void PreviousRow(string columnLetter)
+    public void PreviousRow()
     {
-        if (RowNumber == 1) return;
-        RowNumber--;
+        if (_row == 1u) return;
+        _row -= 1u;
     }
 
     /// <summary>
@@ -110,7 +136,7 @@ public record CellReference
     {
         var numberChars = cellReference.Where(char.IsNumber).ToArray();
         var rowNumber = new string(numberChars);
-        return uint.TryParse(rowNumber, out var result) ? result : 0;
+        return uint.TryParse(rowNumber, out var result) ? result : 0u;
     }
 
     /// <summary>
@@ -130,7 +156,7 @@ public record CellReference
     /// Do not use on a cell reference string.
     /// Should be chained from .GetColumnLetter()
     /// </summary>
-    public static int ToColumnNumber(string columnLetter)
+    public static uint ToColumnNumber(string columnLetter)
     {
         if (string.IsNullOrEmpty(columnLetter))
             throw new ArgumentNullException(nameof(columnLetter));
@@ -145,14 +171,14 @@ public record CellReference
             sum += (columnLetter[i] - 'A' + 1);
         }
 
-        return sum;
+        return (uint)sum;
     }
 
     /// <summary>
     /// Returns the column letter from a column number.
     /// i.e. "1" would be "A"
     /// </summary>
-    public static string ToColumnLetter(int columnNumber)
+    public static string ToColumnLetter(uint columnNumber)
     {
         var dividend = columnNumber;
         var columnName = string.Empty;

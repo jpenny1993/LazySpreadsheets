@@ -28,6 +28,7 @@ internal sealed class ColumnBuilder<TData, TProperty> : IColumnBuilder<TData, TP
     public int ColumnNumber { get; }
     public string ColumnHeader { get; private set; }
     public int ColumnWidth { get; private set; }
+    public bool HasSubtotal { get; private set; }
 
     /// <summary>
     /// Create a ColumnBuilder for a computed or static column.
@@ -62,6 +63,7 @@ internal sealed class ColumnBuilder<TData, TProperty> : IColumnBuilder<TData, TP
         var cellFormatAttr = propertyInfo.GetCustomAttribute<CellFormatAttribute>();
         var cellAlignmentAttr = propertyInfo.GetCustomAttribute<CellAlignmentAttribute>();
         var columnWidthAttr = propertyInfo.GetCustomAttribute<ColumnWidthAttribute>();
+        var subtotalAttr = propertyInfo.GetCustomAttribute<SubtotalAttribute>();
         ColumnNumber = columnNumber;
         ColumnHeader = displayNameAttr?.DisplayName ?? propertyInfo.Name;
         _numberFormatId = cellFormatAttr?.NumberFormatId;
@@ -69,6 +71,7 @@ internal sealed class ColumnBuilder<TData, TProperty> : IColumnBuilder<TData, TP
         _horizontalAlignment = cellAlignmentAttr?.Horizontal;
         _verticalAlignment = cellAlignmentAttr?.Vertical;
         ColumnWidth = columnWidthAttr?.Width ?? 0;
+        HasSubtotal = subtotalAttr != null;
     }
 
     public IColumnBuilder<TData, TProperty> Align(HorizontalAlignment horizontalAlignment)
@@ -127,6 +130,12 @@ internal sealed class ColumnBuilder<TData, TProperty> : IColumnBuilder<TData, TP
         return this;
     }
 
+    public IColumnBuilder<TData, TProperty> Subtotal()
+    {
+        HasSubtotal = true;
+        return this;
+    }
+
     public IColumnBuilder<TData, TProperty> Value(TProperty staticValue)
     {
         _valueSelector = x => staticValue;
@@ -145,7 +154,7 @@ internal sealed class ColumnBuilder<TData, TProperty> : IColumnBuilder<TData, TP
         return this;
     }
 
-    public void ApplyStyles(IXLRangeColumn column)
+    public void ApplyStyles(IXLRange column)
     {
         if (_numberFormatId != null)
         {
