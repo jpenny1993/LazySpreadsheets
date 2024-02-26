@@ -175,7 +175,8 @@ internal sealed class ColumnBuilder<TData, TProperty> : IColumnBuilder<TData, TP
             column.Style.Alignment.Vertical = _verticalAlignment.Value.ToClosedXmlValue();
         }
 
-        if (!string.IsNullOrEmpty(_formulaA1))
+        if (!string.IsNullOrEmpty(_formulaA1) && 
+            column.FirstCell().CellReference().RowNumber > 1) // is not subtotal
         {
             column.FormulaA1 = _formulaA1;
         }
