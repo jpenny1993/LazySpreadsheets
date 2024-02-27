@@ -17,15 +17,17 @@ using LazySpreadsheets.Enums;
 
 public void SaveToFile(IEnumerable<Book> books)
 {
-    return books.ToWorkbook().SaveAs("my-books.xlsx");
+    using var workbook = return books.ToWorkbook();
+    workbook.SaveAs("my-books.xlsx");
 }
 
 public MemoryStream SaveToStream(IEnumerable<Book> books)
 {
-    return new WorkbookBuilder()
+    using var workbook = new WorkbookBuilder()
         .Sheet(books)
-        .ToWorkbook()
-        .ToMemoryStream();
+        .ToWorkbook();
+
+    return workbook.ToMemoryStream();
 }
 
 public byte[] SaveToBytes(IEnumerable<Book> books)
