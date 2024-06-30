@@ -40,6 +40,19 @@ public interface IWorksheetBuilder<TData>
     IWorksheetBuilder<TData> DefineAllPropertiesAsColumns();
 
     /// <summary>
+    /// Removes a defined column from the worksheet builder by property selector.
+    /// </summary>
+    /// <param name="propertySelector">The data to remove.</param>
+    /// <typeparam name="TProperty">The data type.</typeparam>
+    IWorksheetBuilder<TData> Ignore<TProperty>(Expression<Func<TData, TProperty>> propertySelector);
+
+    /// <summary>
+    /// Removes a defined column from the worksheet builder by column header.
+    /// </summary>
+    /// <param name="columnHeader">Display name of the column.</param>
+    IWorksheetBuilder<TData> Ignore(string columnHeader);
+
+    /// <summary>
     /// Sets the worksheet name.
     /// </summary>
     /// <param name="worksheetName">Worksheet name. (default: "Sheet 1")</param>

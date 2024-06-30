@@ -1,7 +1,7 @@
-﻿using System.Linq.Expressions;
+﻿using System.ComponentModel;
+using System.Linq.Expressions;
 using System.Reflection;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using LazySpreadsheets.Attributes;
 using LazySpreadsheets.Extensions;
 using LazySpreadsheets.Interfaces.Export;
@@ -33,7 +33,7 @@ internal sealed class WorksheetBuilder<TData> : IWorksheetBuilder<TData>, IWorks
         CellReference headerStart = hasSubtotalRow ? "A2" : "A1"; // Skip column for subtotals
         CellReference dataStart = headerStart.MutateBy(0, 1); // A2 or A3
         CellReference dataEnd;
-        
+
         // Write column headers
         worksheet.Cell(headerStart).InsertData(new[] { _columnDefinitions.Select(d => d.ColumnHeader) });
 
@@ -151,6 +151,37 @@ internal sealed class WorksheetBuilder<TData> : IWorksheetBuilder<TData>, IWorks
             var columnBuilder = (IColumnDefinition)Activator.CreateInstance(columnBuilderType, columnBuilderParams)!;
 
             _columnDefinitions.Add(columnBuilder);
+        }
+
+        return this;
+    }
+
+    public IWorksheetBuilder<TData> Ignore<TProperty>(Expression<Func<TData, TProperty>> propertySelector)
+    {
+        var propertyInfo = ExpressionExtensions.GetPropertyInfo(propertySelector);
+        var displayNameAttr = propertyInfo.GetCustomAttribute<DisplayNameAttribute>();
+        var columnHeader = displayNameAttr?.DisplayName ?? propertyInfo.Name;
+        return Ignore(columnHeader);
+    }
+
+    public IWorksheetBuilder<TData> Ignore(string columnHeader)
+    {
+        if (_columnDefinitions.Count == 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(columnHeader),
+                $"Column definitions must already be defined. Intended for use after ${nameof(DefineAllPropertiesAsColumns)}().");
+        }
+
+        if (string.IsNullOrEmpty(columnHeader))
+        {
+            return this;
+        }
+
+        var column = _columnDefinitions.Find(c => c.ColumnHeader == columnHeader);
+        if (column != null)
+        {
+            _columnDefinitions.Remove(column);
         }
 
         return this;

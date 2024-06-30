@@ -2,5 +2,11 @@
 
 public static class FileExtensions
 {
-    public const string ExcelSpreadsheet = ".xlsx";
+    public const string MacroEnabledWorkbook = ".xlsm";
+
+    public const string MacroEnabledTemplate = ".xltm";
+
+    public const string Workbook = ".xlsx";
+
+    public const string Template = ".xltx";
 }
