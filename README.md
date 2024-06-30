@@ -301,8 +301,7 @@ using LazySpreadsheets.Constants;
 using LazySpreadsheets.Export;
 using LazySpreadsheets.Extensions;
 
-byte[] bytes = new WorkbookBuilder()
-    .Sheet(books)
+byte[] bytes = enumerable
     .ToWorkbook()
     .ToBytes(disposeWorkbook: true);
 ```
@@ -320,8 +319,7 @@ using LazySpreadsheets.Constants;
 using LazySpreadsheets.Export;
 using LazySpreadsheets.Extensions;
 
-MemoryStream ms = new WorkbookBuilder()
-    .Sheet(books)
+MemoryStream ms = enumerable
     .ToWorkbook()
     .ToMemoryStream(disposeWorkbook: true);
 
@@ -341,8 +339,7 @@ using LazySpreadsheets.Constants;
 using LazySpreadsheets.Export;
 using LazySpreadsheets.Extensions;
 
-new WorkbookBuilder()
-    .Sheet(books)
+enumerable
     .ToWorkbook()
     .ToFile(filename: "test" + FileExtensions.Workbook, disposeWorkbook: true);
 ```
