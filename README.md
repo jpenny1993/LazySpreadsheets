@@ -344,5 +344,5 @@ using LazySpreadsheets.Extensions;
 new WorkbookBuilder()
     .Sheet(books)
     .ToWorkbook()
-    .ToFile(filename: "test" + FileExtensionTypes.Workbook, disposeWorkbook: true);
+    .ToFile(filename: "test" + FileExtensions.Workbook, disposeWorkbook: true);
 ```
